@@ -6,15 +6,18 @@ on:
 
 jobs:
   build:
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
-      - name: Login to docker hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
       - name: Build docker image
         run: docker build -t vivek456vk/nodejs-app .
-      - name: Publish image to docker hub
+
+      - name: Publish image to Docker Hub
         run: docker push vivek456vk/nodejs-app:latest
 
   deploy:
@@ -23,7 +26,9 @@ jobs:
     steps:
       - name: Pull image from docker hub
         run: docker pull vivek456vk/nodejs-app:latest
+
       - name: Delete old container
-        run: docker rm -f nodejs-app-container
+        run: docker rm -f nodejs-app-container || true
+
       - name: Run docker container
         run: docker run -d -p 5000:5000 --name nodejs-app-container vivek456vk/nodejs-app
